@@ -1,5 +1,5 @@
 import openai
-openai.api_key = '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'
+openai.api_key = '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'
 
 _model = "text-davinci-002"
 _echo=False
@@ -11,41 +11,42 @@ _prompt=""
 _n=1
 _best_of = 2
 
+name = "Kevin"
+
 datePronoun = "her"
 
 locationPrompt = "What are two places you could go to together?"
 questionPrompt = "What are two questions you could ask?"
 activityPrompt = "What are two activties you could do together?"
 
-questionPromptFollowup = "You ask "
+questionPromptFollowup = f"{name}: "
 continuePrompt = "What happens next?"
 
 sampleDialogue = ""
 
 def setup():
     #name = input("What is your name? ")
-    name = "Kevin"
     global _prompt
     _prompt = f"""Your name is {name}. You are a 20 year old business major at University of Columbia New York.
-        You are at a party at a bar called the Drunken Tab where you just walked up to a beautiful woman."""
+        You are at a party at a bar called the Drunken Tab where you just started talking to a beautiful woman."""
     dateName = "Julie"
     sampleDialogue = f"{name}: Hi, my name is {name}. What is your name?\n{dateName}: My name is {dateName}. Nice to meet you."
-    #sampleQuestion = "What are two questions you could ask? \n 1. What do you like to do for fun? \n 2. What is your favorite band? \n You ask, What do you like to do for fun?"
-    _prompt = _prompt + '\n' + sampleDialogue + '\n' + '\n' + questionPrompt
+    _prompt = _prompt + '\n' + sampleDialogue + setFollowUp()
     print(_prompt)
+    return _prompt
+
+def setFollowUp():
+    return '\n' + questionPrompt
 
 def preparePrompt(text):
     text = text.strip()
     splitText = text.partition('\n')
-    print(splitText[0])
-    print(splitText[2])
 
     choice = input("What would you like to ask? (1 or 2) ")
     if choice == '1':
-        newText = questionPromptFollowup + splitText[0]
+        newText = questionPromptFollowup + splitText[0].split(' ', 1)[-1]
     else:
-        newText = questionPromptFollowup + splitText[2]
-    print(newText)
+        newText = questionPromptFollowup + splitText[2].split(' ', 1)[-1]
     return newText
 
 def callGpt(text):
@@ -59,17 +60,27 @@ def callGpt(text):
         prompt = text,
         n = _n,
         best_of = _best_of)
-    return completion.choices[0].text
+    text = completion.choices[0].text
+    print(text)
+    return text
 
 def main():
     global _prompt
-    setup()
+    #Initial formatting of prompt for information & formatting
+    _prompt = setup()
+    
     while True:
+        # Call GPT on the prompt
         completion = callGpt(_prompt)
-        _prompt = _prompt + completion + '\n' + preparePrompt(completion)
-        print ('---------------------------')
-        #print(_prompt)
-        print(callGpt(_prompt))
+        
+        # Ask the user which follow-up question they would like to ask
+        qPromptFollowup = preparePrompt(completion)
+        print(qPromptFollowup)
+        _prompt = '\n' + qPromptFollowup
+        
+        # Feed GPT follow-up question
+        completion = callGpt(_prompt)
+        _prompt = _prompt + completion + setFollowUp()
 
 def test():
     txt = "What is your favorite food?"
