@@ -1,17 +1,21 @@
 import openai
-openai.api_key = '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'
+import apikey
+import os
+
+os.system("python apikey.py")
+openai.api_key = apikey.api_key
 
 _model = "text-davinci-002"
 _echo=False
 _temperature=.7
-_presence_penalty = 1
-_frequency_penalty = 1
+_presence_penalty = 1.5
+_frequency_penalty = .5
 _max_tokens = 100
 _prompt=""
 _n=1
 _best_of = 2
 
-name = "Kevin"
+name = "John"
 
 datePronoun = "her"
 
@@ -24,14 +28,25 @@ continuePrompt = "What happens next?"
 
 sampleDialogue = ""
 
+#These initial questions don't seem to affect the subsequent dialogue much. Probably needs to be more involved.
+
+# Seed GPT with some initial text about you. 
+def selfSetupQuestions():
+    return "You are, " + input("Please enter some adjectives to describe yourself. ") + "."
+
+# Seed GPT with some initial text about your date.
+def dateSetupQuestions():
+    return "\n Julie is " + input("Please enter some adjectives to describe your date. ") + "."
+
+
 def setup():
     #name = input("What is your name? ")
     global _prompt
     _prompt = f"""Your name is {name}. You are a 20 year old business major at University of Columbia New York.
-        You are at a party at a bar called the Drunken Tab where you just started talking to a beautiful woman."""
+        You are at a party at a bar called the Drunken Tab where you just started talking to a beautiful woman named Julie."""
     dateName = "Julie"
     sampleDialogue = f"{name}: Hi, my name is {name}. What is your name?\n{dateName}: My name is {dateName}. Nice to meet you."
-    _prompt = _prompt + '\n' + sampleDialogue + setFollowUp()
+    _prompt = selfSetupQuestions() + dateSetupQuestions() + " " + _prompt + '\n' + sampleDialogue + setFollowUp()
     print(_prompt)
     return _prompt
 
